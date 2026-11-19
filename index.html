@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Electrical Wiring 110 — Circuit Topology Simulator</title>
+<style>
+:root{font-family:Arial,Helvetica,sans-serif;color:#1c3044;background:#fff}
+*{box-sizing:border-box}body{margin:0;padding:24px;max-width:1400px;margin-inline:auto}
+h1{font-size:clamp(24px,3vw,38px);margin:0 0 8px}p{color:#46596a;line-height:1.5}
+.tabs{display:flex;gap:12px;margin:22px 0}.tabs button{border:2px solid #177b8b;background:white;color:#125d69;padding:12px 25px;border-radius:10px;font-size:19px;font-weight:bold;cursor:pointer}
+.tabs button.active{background:#167e91;color:white}
+.layout{display:grid;grid-template-columns:minmax(480px,1.3fr) minmax(310px,1fr);gap:24px}
+.panel{border:1px solid #cdd9e0;border-radius:14px;background:#fbfdff;padding:22px}
+svg{width:100%;height:auto;display:block}
+.wire{stroke:#273e51;stroke-width:3.4;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.resistor{stroke:#ae721d;stroke-width:2.8;fill:#fff2d9}
+.source{stroke:#167e91;stroke-width:3;fill:white}
+.svglabel{font-size:17px;fill:#1c3044;font-weight:bold;text-anchor:middle}
+.detail{font-size:15px;fill:#17677a;font-weight:bold;text-anchor:middle}
+.node{fill:#273e51}
+.control{margin:16px 0 26px}.control label{font-size:20px;font-weight:bold;display:flex;justify-content:space-between;margin-bottom:12px}
+input[type=range]{width:100%;accent-color:#167e91}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.metric{background:#edf5f7;padding:14px;border-radius:10px}
+.metric .name{font-size:14px;color:#486070}.metric .number{font-size:23px;font-weight:bold;color:#163e51;margin-top:4px}
+.question{margin-top:24px;font-weight:bold}
+@media(max-width:850px){.layout{grid-template-columns:1fr}.panel{min-width:0}body{padding:12px}}
+</style></head><body>
+<h1>Electrical Wiring 110 — Circuit Topology</h1>
+<p>Two resistive loads connected to an ideal 120 V AC source. Adjust either resistance and observe the voltage, current, and total resistance. Values are RMS.</p>
+<div class="tabs"><button id="seriesBtn" class="active" type="button">Series circuit</button><button id="parallelBtn" type="button">Parallel circuit</button></div>
+<div class="layout">
+<section class="panel">
+<svg viewBox="0 0 620 340" role="img" aria-label="AC source and two resistive loads, with dynamically updated topology">
+<g id="seriesDrawing">
+ <path class="wire" d="M95 118 V65 H195 M285 65 H370 M460 65 H525 V280 H95 V202"/>
+ <rect class="resistor" x="195" y="45" width="90" height="40" rx="5"/>
+ <rect class="resistor" x="370" y="45" width="90" height="40" rx="5"/>
+ <text id="sr1" class="svglabel" x="240" y="71">40 Ω</text>
+ <text id="sr2" class="svglabel" x="415" y="71">80 Ω</text>
+ <text id="sv1" class="detail" x="240" y="119">40 V</text>
+ <text id="sv2" class="detail" x="415" y="119">80 V</text>
+</g>
+<g id="parallelDrawing" style="display:none">
+ <path class="wire" d="M95 118 V65 H175 V115 H225 M315 115 H445 V65 H525 V280 H95 V202 M175 115 V220 H225 M315 220 H445 V115"/>
+ <rect class="resistor" x="225" y="95" width="90" height="40" rx="5"/>
+ <rect class="resistor" x="225" y="200" width="90" height="40" rx="5"/>
+ <text id="pr1" class="svglabel" x="270" y="121">40 Ω</text>
+ <text id="pr2" class="svglabel" x="270" y="226">80 Ω</text>
+ <text id="pi1" class="detail" x="380" y="103">3.00 A</text>
+ <text id="pi2" class="detail" x="380" y="208">1.50 A</text>
+ <circle class="node" cx="175" cy="115" r="5"/>
+ <circle class="node" cx="445" cy="115" r="5"/>
+</g>
+<circle class="source" cx="95" cy="160" r="42"/>
+<path class="source" d="M68 160 C77 139 86 139 95 160 S113 181 122 160" fill="none"/>
+<text class="detail" x="95" y="224">120 V AC</text>
+<text id="topologyLabel" class="detail" x="320" y="320">ONE CURRENT PATH</text>
+</svg>
+<p id="explanation">The same current flows through both loads. Voltage divides according to resistance.</p>
+</section>
+<section class="panel">
+<div class="control"><label for="r1">Resistance R₁ <span id="r1Label">40 Ω</span></label><input id="r1" type="range" min="10" max="200" step="10" value="40"></div>
+<div class="control"><label for="r2">Resistance R₂ <span id="r2Label">80 Ω</span></label><input id="r2" type="range" min="10" max="200" step="10" value="80"></div>
+<div class="metrics">
+<div class="metric"><div class="name">Total resistance</div><div class="number" id="rt"></div></div>
+<div class="metric"><div class="name">Total current</div><div class="number" id="it"></div></div>
+<div class="metric"><div class="name">Voltage across R₁</div><div class="number" id="v1"></div></div>
+<div class="metric"><div class="name">Voltage across R₂</div><div class="number" id="v2"></div></div>
+<div class="metric"><div class="name">Current through R₁</div><div class="number" id="i1"></div></div>
+<div class="metric"><div class="name">Current through R₂</div><div class="number" id="i2"></div></div>
+</div>
+<p class="question">Predict: What changes when you increase R₂ while keeping R₁ and the source voltage constant?</p>
+</section></div>
+<script>
+let mode='series';
+const $=id=>document.getElementById(id);
+function update(){
+ const a=+$('r1').value,b=+$('r2').value,series=mode==='series';
+ const rt=series?a+b:a*b/(a+b),it=120/rt,v1=series?it*a:120,v2=series?it*b:120,i1=v1/a,i2=v2/b;
+ $('r1Label').textContent=a+' Ω';$('r2Label').textContent=b+' Ω';
+ for(const [id,val,unit,dec] of [['rt',rt,' Ω',1],['it',it,' A',2],['v1',v1,' V',1],['v2',v2,' V',1],['i1',i1,' A',2],['i2',i2,' A',2]]) $(id).textContent=val.toFixed(dec)+unit;
+ $('sr1').textContent=$('pr1').textContent=a+' Ω';$('sr2').textContent=$('pr2').textContent=b+' Ω';
+ $('sv1').textContent=v1.toFixed(1)+' V';$('sv2').textContent=v2.toFixed(1)+' V';
+ $('pi1').textContent=i1.toFixed(2)+' A';$('pi2').textContent=i2.toFixed(2)+' A';
+ $('seriesDrawing').style.display=series?'':'none';$('parallelDrawing').style.display=series?'none':'';
+ $('seriesBtn').classList.toggle('active',series);$('parallelBtn').classList.toggle('active',!series);
+ $('topologyLabel').textContent=series?'ONE CURRENT PATH':'TWO PARALLEL BRANCHES';
+ $('explanation').textContent=series?'The same current flows through both loads. Voltage divides according to resistance.':'Both loads have 120 V across them. Current divides between the branches.';
+}
+$('seriesBtn').onclick=()=>{mode='series';update()};
+$('parallelBtn').onclick=()=>{mode='parallel';update()};
+$('r1').oninput=update;$('r2').oninput=update;update();
+</script></body></html>
